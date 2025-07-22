@@ -130,6 +130,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['logout'])) {
         $loan_amount = $_POST["loan_amount"];
         $email = $_POST["email"];
         $number = $_POST['number'];
+        $state = $_POST["state"];
+        $city = $_POST["city"];
         $itr_status = $_POST["itr_status"];
         $amount_2022_23 = $_POST["amount_2022_23"] ?? '';
         $amount_2023_24 = $_POST["amount_2023_24"] ?? '';
@@ -153,11 +155,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['logout'])) {
     
         $stmt = $conn->prepare("
             INSERT INTO lead_data_test 
-            (loan_service, client_name, company_name, loan_amount, email, mobile_number, itr_status, amount_2022_23, amount_2023_24, amount_2024_25, shop_status, house_status, any_existing_loan, loan_type, loan_bank, loan_taken_amount, credit_card, credit_bank, credit_limit, gst_status, gst_years, annual_turnover, submitted_by_email)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (loan_service, client_name, company_name, loan_amount, email, mobile_number, state, city, itr_status, amount_2022_23, amount_2023_24, amount_2024_25, shop_status, house_status, any_existing_loan, loan_type, loan_bank, loan_taken_amount, credit_card, credit_bank, credit_limit, gst_status, gst_years, annual_turnover, submitted_by_email)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
-        $stmt->bind_param("sssssssssssssssssssssss", $loan_service, $client_name, $company_name, $loan_amount, $email, $number, $itr_status, $amount_2022_23, $amount_2023_24, $amount_2024_25, $shop_status, $house_status, $any_loan, $loan_type, $loan_bank, $loan_taken_amount, $credit_card, $credit_bank, $credit_limit, $gst_status, $gst_years, $turnover, $submitted_by_email);
+        $stmt->bind_param("sssssssssssssssssssssssss", $loan_service, $client_name, $company_name, $loan_amount, $email, $number, $state, $city, $itr_status, $amount_2022_23, $amount_2023_24, $amount_2024_25, $shop_status, $house_status, $any_loan, $loan_type, $loan_bank, $loan_taken_amount, $credit_card, $credit_bank, $credit_limit, $gst_status, $gst_years, $turnover, $submitted_by_email);
 
         }
         if ($stmt->execute()) {
@@ -353,6 +355,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['logout'])) {
         
         <label>Mobile Number</label>
          <input type="text" name="number" pattern="[0-9]{10}" maxlength="10" required>
+
+        <label>State</label>
+        <select name="state" id="state" required>
+            <option value="" disabled selected>Select State</option>
+        </select>
+
+        <label>City</label>
+        <select name="city" id="city" required>
+            <option value="" disabled selected>Select City</option>
+        </select>
 
         <label>ITR Filed (Yes/No)</label>
         <select name="itr_status" required>
@@ -704,6 +716,87 @@ document.querySelectorAll(".indian-format").forEach(function(input) {
     input.form.addEventListener("submit", function () {
         input.value = input.value.replace(/,/g, '');
     });
+});
+
+// Indian States and Cities Data
+const statesAndCities = {
+    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati", "Kadapa", "Anantapur", "Eluru", "Ongole", "Chittoor", "Machilipatnam", "Adoni", "Tenali", "Proddatur", "Hindupur", "Bhimavaram", "Madanapalle", "Guntakal"],
+    "Arunachal Pradesh": ["Itanagar", "Naharlagun", "Pasighat", "Tezpur", "Bomdila", "Ziro", "Along", "Tezu", "Changlang", "Khonsa", "Seppa", "Namsai", "Roing", "Yingkiong", "Anini"],
+    "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur", "Bongaigaon", "Karimganj", "Sivasagar", "Goalpara", "Barpeta", "North Lakhimpur", "Mangaldoi", "Hailakandi", "Haflong", "Diphu", "Golaghat", "Kokrajhar", "Dhubri"],
+    "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", "Darbhanga", "Bihar Sharif", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra", "Danapur", "Saharsa", "Hajipur", "Sasaram", "Dehri", "Siwan", "Motihari", "Nawada"],
+    "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Durg", "Rajnandgaon", "Jagdalpur", "Raigarh", "Ambikapur", "Mahasamund", "Dhamtari", "Chirmiri", "Janjgir", "Sakti", "Tilda Newra", "Mungeli", "Naila Janjgir", "Champa", "Akaltara", "Dongargaon"],
+    "Goa": ["Panaji", "Vasco da Gama", "Margao", "Mapusa", "Ponda", "Bicholim", "Curchorem", "Sanquelim", "Valpoi", "Pernem", "Quepem", "Canacona", "Cuncolim", "Aldona", "Cortalim"],
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Junagadh", "Gandhinagar", "Anand", "Navsari", "Morbi", "Nadiad", "Surendranagar", "Bharuch", "Mehsana", "Bhuj", "Porbandar", "Palanpur", "Valsad", "Vapi"],
+    "Haryana": ["Faridabad", "Gurgaon", "Hisar", "Rohtak", "Panipat", "Karnal", "Sonipat", "Yamunanagar", "Panchkula", "Bhiwani", "Bahadurgarh", "Jind", "Sirsa", "Thanesar", "Kaithal", "Palwal", "Rewari", "Hansi", "Narnaul", "Fatehabad"],
+    "Himachal Pradesh": ["Shimla", "Dharamshala", "Solan", "Mandi", "Palampur", "Baddi", "Nahan", "Una", "Kullu", "Hamirpur", "Bilaspur", "Chamba", "Kangra", "Sundernagar", "Joginder Nagar", "Nurpur", "Manali", "Keylong", "Kinnaur", "Lahaul Spiti"],
+    "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro Steel City", "Deoghar", "Phusro", "Hazaribagh", "Giridih", "Ramgarh", "Medininagar", "Chirkunda", "Chaibasa", "Gumla", "Dumka", "Godda", "Sahebganj", "Pakur", "Chatra", "Lohardaga", "Simdega"],
+    "Karnataka": ["Bangalore", "Mysore", "Hubli", "Mangalore", "Belgaum", "Gulbarga", "Davanagere", "Bellary", "Bijapur", "Shimoga", "Tumkur", "Raichur", "Bidar", "Hospet", "Hassan", "Gadag-Betigeri", "Udupi", "Bhadravati", "Chitradurga", "Kolar"],
+    "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Kollam", "Palakkad", "Alappuzha", "Malappuram", "Kannur", "Kasaragod", "Kottayam", "Pathanamthitta", "Idukki", "Ernakulam", "Wayanad", "Munnar", "Varkala", "Guruvayur", "Bekal", "Thekkady"],
+    "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa", "Murwara", "Singrauli", "Burhanpur", "Khandwa", "Bhind", "Chhindwara", "Guna", "Shivpuri", "Vidisha", "Chhatarpur"],
+    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Aurangabad", "Solapur", "Amravati", "Navi Mumbai", "Kolhapur", "Sangli", "Jalgaon", "Akola", "Latur", "Dhule", "Ahmednagar", "Chandrapur", "Parbhani", "Ichalkaranji", "Jalna"],
+    "Manipur": ["Imphal", "Thoubal", "Lilong", "Mayang Imphal", "Kakching", "Bishnupur", "Churachandpur", "Senapati", "Ukhrul", "Tamenglong", "Chandel", "Jiribam", "Kangpokpi", "Tengnoupal", "Pherzawl", "Noney", "Kamjong"],
+    "Meghalaya": ["Shillong", "Tura", "Nongpoh", "Jowai", "Baghmara", "Williamnagar", "Nongstoin", "Mawkyrwat", "Resubelpara", "Ampati", "Mairang", "Khliehriat", "Nongpoh", "Cherrapunji", "Dawki"],
+    "Mizoram": ["Aizawl", "Lunglei", "Saiha", "Champhai", "Kolasib", "Serchhip", "Mamit", "Lawngtlai", "Saitual", "Khawzawl", "Hnahthial"],
+    "Nagaland": ["Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha", "Zunheboto", "Phek", "Kiphire", "Longleng", "Peren", "Mon"],
+    "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Brahmapur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada", "Jharsuguda", "Jeypore", "Barbil", "Khordha", "Sunabeda", "Rayagada", "Kendrapara", "Paradip", "Dhenkanal", "Koraput", "Angul"],
+    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Firozpur", "Batala", "Pathankot", "Moga", "Abohar", "Malerkotla", "Khanna", "Phagwara", "Muktsar", "Barnala", "Rajpura", "Hoshiarpur", "Kapurthala", "Faridkot"],
+    "Rajasthan": ["Jaipur", "Jodhpur", "Kota", "Bikaner", "Ajmer", "Udaipur", "Bhilwara", "Alwar", "Bharatpur", "Sikar", "Pali", "Sri Ganganagar", "Kishangarh", "Baran", "Dhaulpur", "Tonk", "Beawar", "Hanumangarh", "Churu", "Sawai Madhopur"],
+    "Sikkim": ["Gangtok", "Namchi", "Gyalshing", "Mangan", "Rangpo", "Singtam", "Jorethang", "Nayabazar", "Soreng", "Yuksom"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Tiruppur", "Vellore", "Erode", "Thoothukkudi", "Dindigul", "Thanjavur", "Ranipet", "Sivakasi", "Karur", "Udhagamandalam", "Hosur", "Nagercoil", "Kanchipuram", "Cuddalore"],
+    "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", "Ramagundam", "Mahabubnagar", "Nalgonda", "Adilabad", "Suryapet", "Miryalaguda", "Jagtial", "Mancherial", "Nirmal", "Kothagudem", "Bodhan", "Sangareddy", "Metpally", "Zaheerabad", "Kamareddy"],
+    "Tripura": ["Agartala", "Dharmanagar", "Udaipur", "Kailasahar", "Belonia", "Khowai", "Pratapgarh", "Ranirbazar", "Kumarghat", "Sonamura", "Panisagar", "Amarpur", "Teliamura", "Sabroom"],
+    "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Varanasi", "Meerut", "Allahabad", "Bareilly", "Aligarh", "Moradabad", "Saharanpur", "Gorakhpur", "Noida", "Firozabad", "Jhansi", "Muzaffarnagar", "Mathura", "Rampur", "Shahjahanpur", "Farrukhabad"],
+    "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur", "Kashipur", "Rishikesh", "Kotdwar", "Ramnagar", "Pithoragarh", "Jaspur", "Manglaur", "Laksar", "Tanakpur", "Clement Town", "Mussoorie", "Nainital", "Almora", "Pauri", "Bageshwar"],
+    "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Malda", "Bardhaman", "Baharampur", "Habra", "Kharagpur", "Shantipur", "Dankuni", "Dhulian", "Ranaghat", "Haldia", "Raiganj", "Krishnanagar", "Nabadwip", "Medinipur", "Jalpaiguri"],
+    "Andaman and Nicobar Islands": ["Port Blair", "Bamboo Flat", "Garacharma", "Diglipur", "Mayabunder", "Rangat", "Campbell Bay", "Car Nicobar", "Hut Bay"],
+    "Chandigarh": ["Chandigarh"],
+    "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Silvassa"],
+    "Delhi": ["New Delhi", "Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi", "Central Delhi", "North East Delhi", "North West Delhi", "South East Delhi", "South West Delhi", "Shahdara"],
+    "Jammu and Kashmir": ["Srinagar", "Jammu", "Baramulla", "Anantnag", "Sopore", "KathuaUdhampur", "Punch", "Rajauri", "Kupwara", "Budgam", "Ganderbal", "Pulwama", "Shopian", "Bandipora", "Kulgam"],
+    "Ladakh": ["Leh", "Kargil", "Nubra", "Zanskar", "Changthang", "Drass"],
+    "Lakshadweep": ["Kavaratti", "Agatti", "Minicoy", "Amini", "Andrott", "Kalpeni", "Kadmat", "Kiltan", "Chetlat", "Bitra"],
+    "Puducherry": ["Puducherry", "Karaikal", "Yanam", "Mahe"]
+};
+
+// Populate states dropdown
+document.addEventListener("DOMContentLoaded", function() {
+    const stateSelect = document.getElementById("state");
+    const citySelect = document.getElementById("city");
+
+    // Populate states
+    Object.keys(statesAndCities).sort().forEach(state => {
+        const option = document.createElement("option");
+        option.value = state;
+        option.textContent = state;
+        stateSelect.appendChild(option);
+    });
+
+    // Handle state change
+    stateSelect.addEventListener("change", function() {
+        const selectedState = this.value;
+        
+        // Clear existing cities
+        citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
+        
+        if (selectedState && statesAndCities[selectedState]) {
+            // Populate cities for selected state
+            statesAndCities[selectedState].sort().forEach(city => {
+                const option = document.createElement("option");
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+            
+            // Enable city dropdown
+            citySelect.disabled = false;
+        } else {
+            // Disable city dropdown if no state selected
+            citySelect.disabled = true;
+        }
+    });
+
+    // Initially disable city dropdown
+    citySelect.disabled = true;
 });
 
 setInterval(() => {
