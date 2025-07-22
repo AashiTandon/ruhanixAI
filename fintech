@@ -1,12 +1,655 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Page Title</title>
+    <title>FINTECH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f2f4f7;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .form-wrapper {
+            background-color: #fff;
+            margin: 20px !important;
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 1300px;
+            box-sizing: border-box;
+            overflow-y: hidden;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 30px;
+            color: #222;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 20px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        select {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            background-color: #e8e8ff;
+            color: #333;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button[type="submit"] {
+            margin-top: 0px;
+            padding: 14px;
+            background-color: #2E6AC5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 200px;
+            transition: background-color 0.3s ease;
+            margin-left: auto;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #1c4a90;
+        }
+
+        @media (min-width: 481px) and (max-width: 700px){
+            .form-wrapper {
+                max-width: 90%;
+                padding: 10px;
+            }
+
+            label {
+                font-size: 18px;
+            }
+
+            input[type="text"],
+            input[type="email"],
+            input[type="text"],
+            select {
+                font-size: 18px;
+                padding: 10px;
+                height: 50px;
+            }
+
+            button[type="submit"] {
+                width: 50%;
+                font-size: 15px;
+                padding: 12px;
+                margin-left: auto;
+            }
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+
+        .popup-content button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #2E6AC5;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
-<h1>This is a Heading</h1>
-<p>This is a paragraph.</p>
+<div class="form-wrapper">
+    
+    <div style="width: 100%; display: flex; justify-content: flex-end; padding: 5px;">
+    <form method="POST" action="" style="margin: 0;">
+        <button type="submit" name="logout" style="padding: 10px 18px;width:100px;margin: 5px; background-color: red; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">Logout</button>
+    </form>
+    </div>
 
+    <form method="POST" action="" onsubmit="return validateForm()">
+        <h1>Loan Consultant/Agent</h1>
+
+        <label>Select Loan Service:</label>
+        <select name="loan_service" required>
+            <option value="" disabled selected>Select</option>
+            <option value="Loan Against Property">Loan Against Property</option>
+            <option value="Business Loan">Business Loan</option>
+            <option value="Car Loan">Car Loan</option>
+            <option value="Home Loan">Home Loan</option>
+            <option value="KCC Agri Loan">KCC Agri Loan</option>
+            <option value="Personal Loan">Personal Loan</option>
+            <option value="Two Wheeler Loan">Two Wheeler Loan</option>
+            <option value="Education Loan for Abroad Study">Education Loan for Abroad Study</option>
+        </select>
+
+        <label>Client Name</label>
+        <input type="text" name="client_name" required>
+
+        <label>Company/Organization Name</label>
+        <input type="text" name="company_name" required>
+
+        <label>Loan Amount</label>
+        <input type="text" name="loan_amount" class="indian-format" required>
+
+        <label>E-mail Id</label>
+        <input type="email" name="email">
+        
+        <label>Mobile Number</label>
+         <input type="text" name="number" pattern="[0-9]{10}" maxlength="10" required>
+
+        <label>ITR Filed (Yes/No)</label>
+        <select name="itr_status" required>
+            <option value="" disabled selected>Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+        
+        <div id="itr-extra-fields" style="display: none;border: 1px solid black; border-radius: 10px; padding: 10px; margin-left:15px;margin-right:15px;margin-top:15px;">
+            <input type="text" name="amount_2022_23" id="amount1" class="indian-format" placeholder="ITR Amount(2022-23)" style="margin-top: 15px;">
+        
+            <input type="text" name="amount_2023_24" id="amount2" class="indian-format" placeholder="ITR Amount(2023-24)" style="margin-top: 15px;">
+        
+            <input type="text" name="amount_2024_25" id="amount3" class="indian-format" placeholder="ITR Amount(2024-25)"
+            style="margin-top: 15px;">
+        </div>
+
+        <label>Shop Rented/Own</label>
+        <select name="shop_status" required>
+            <option value="" disabled selected>Select</option>
+            <option value="Rented">Rented</option>
+            <option value="Own">Own</option>
+        </select>
+
+        <label>House Rented/Own</label>
+        <select name="house_status" required>
+            <option value="" disabled selected>Select</option>
+            <option value="Rented">Rented</option>
+            <option value="Own">Own</option>
+        </select>
+
+        <label>Have you taken any loan?</label>
+        <select name="any_loan" required>
+            <option value="" disabled selected>Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+        
+        <div id="loan-details" style="display: none; margin-top: 15px; border: 1px solid black; border-radius: 10px; padding: 10px; margin-left:15px;margin-right:15px;">
+            <label>Loan Type</label>
+            <select name="loan_type" id="loan_type" style="margin-bottom: 5px;">
+                <option value="" disabled selected>Select</option>
+                <option value="Loan Against Property">Loan Against Property</option>
+                <option value="Business Loan">Business Loan</option>
+                <option value="Car Loan">Car Loan</option>
+                <option value="Home Loan">Home Loan</option>
+                <option value="KCC Agri Loan">KCC Agri Loan</option>
+                <option value="Personal Loan">Personal Loan</option>
+                <option value="Two Wheeler Loan">Two Wheeler Loan</option>
+                <option value="Education Loan for Abroad Study">Education Loan for Abroad Study</option>
+            </select>
+        
+            <label style="margin-bottom: 5px;">Bank Name</label>
+            <select name="loan_bank" id="loan_bank" style="margin-bottom: 5px;">
+                <option value="" disabled selected>Select</option>
+                <option value="State Bank of India (SBI)">State Bank of India (SBI)</option>
+                <option value="Punjab National Bank (PNB)">Punjab National Bank (PNB)</option>
+                <option value="Bank of Baroda (BoB)">Bank of Baroda (BoB)</option>
+                <option value="Canara Bank">Canara Bank</option>
+                <option value="Union Bank of India">Union Bank of India</option>
+                <option value="Indian Bank">Indian Bank</option>
+                <option value="UCO Bank">UCO Bank</option>
+                <option value="Bank of Maharashtra">Bank of Maharashtra</option>
+                <option value="Central Bank of India">Central Bank of India</option>
+                
+                <option value="HDFC Bank">HDFC Bank</option>
+                <option value="ICICI Bank">ICICI Bank</option>
+                <option value="Axis Bank">Axis Bank</option>
+                <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+                <option value="IDFC FIRST Bank">IDFC FIRST Bank</option>
+                <option value="IndusInd Bank">IndusInd Bank</option>
+                <option value="Yes Bank">Yes Bank</option>
+                <option value="RBL Bank">RBL Bank</option>
+                <option value="Federal Bank">Federal Bank</option>
+                <option value="South Indian Bank">South Indian Bank</option>
+                <option value="Karur Vysya Bank">Karur Vysya Bank</option>
+                <option value="City Union Bank">City Union Bank</option>
+                <option value="Other">Other</option>
+            </select>
+        
+            <label style="margin-bottom: 5px;">Loan Amount</label>
+            <input type="text" name="loan_taken_amount" id="loan_taken_amount" class="indian-format" placeholder="Enter Loan Amount" style="margin-bottom: 5px;">
+        </div>
+
+        <label>Have you taken any credit card?</label>
+        <select name="credit_card" id="credit_card" required>
+            <option value="" disabled selected>Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+        
+        <div id="credit-details" style="display: none; margin-top: 15px;border: 1px solid black; border-radius: 10px; padding: 10px; margin-left:15px;margin-right:15px;">
+            <label>Credit Card Bank Name</label>
+            <select name="credit_bank" id="credit_bank" style="margin-bottom: 15px;">
+                <option value="" disabled selected>Select</option>
+                <option value="State Bank of India (SBI)">State Bank of India (SBI)</option>
+                <option value="Punjab National Bank (PNB)">Punjab National Bank (PNB)</option>
+                <option value="Bank of Baroda (BoB)">Bank of Baroda (BoB)</option>
+                <option value="Canara Bank">Canara Bank</option>
+                <option value="Union Bank of India">Union Bank of India</option>
+                <option value="Indian Bank">Indian Bank</option>
+                <option value="UCO Bank">UCO Bank</option>
+                <option value="Bank of Maharashtra">Bank of Maharashtra</option>
+                <option value="Central Bank of India">Central Bank of India</option>
+                
+                <option value="HDFC Bank">HDFC Bank</option>
+                <option value="ICICI Bank">ICICI Bank</option>
+                <option value="Axis Bank">Axis Bank</option>
+                <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+                <option value="IDFC FIRST Bank">IDFC FIRST Bank</option>
+                <option value="IndusInd Bank">IndusInd Bank</option>
+                <option value="Yes Bank">Yes Bank</option>
+                <option value="RBL Bank">RBL Bank</option>
+                <option value="Federal Bank">Federal Bank</option>
+                <option value="South Indian Bank">South Indian Bank</option>
+                <option value="Karur Vysya Bank">Karur Vysya Bank</option>
+                <option value="City Union Bank">City Union Bank</option>
+                <option value="Other">Other</option>
+            </select>
+        
+            <label>Credit Limit (₹)</label>
+            <input type="text" name="credit_limit" id="credit_limit" class="indian-format" placeholder="Enter Limit" style="margin-top: 10px;">
+        </div>
+        
+        <label>Do you have GST Number?</label>
+        <select name="gst_status" required style="margin-bottom: 5px;">
+            <option value="" disabled selected>Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+
+        <div id="gst-years-field" style = "border: 1px solid black; border-radius: 10px; padding: 10px; margin-left:15px;margin-right:15px;">
+            <label>How many years old GST Number?</label>
+            <select name="gst_years" id="gst_years">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+            </select>
+        </div>
+
+
+        <label>Turnover/Sales Per Year</label>
+        <input type="text" name="turnover" class="indian-format" required>
+
+        <label>State</label>
+        <select name="state" id="state" required>
+            <option value="" disabled selected>Select State</option>
+        </select>
+
+        <label>City</label>
+        <select name="city" id="city" required>
+            <option value="" disabled selected>Select City</option>
+        </select>
+
+        <br><br>
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="popup" class="popup-overlay">
+        <div class="popup-content">
+            <p>Form submitted successfully!</p>
+            <button id="popup-ok">OK</button>
+        </div>
+    </div>
+
+<div id="blockedPopup" class="popup-overlay">
+    <div class="popup-content">
+        <p>Data cannot be submitted because this Email ID is <strong>disabled</strong>.<br>Please contact the admin.</p>
+        <button onclick="window.location.href='index.php'">OK</button>
+    </div>
+</div>
+    <script>
+    
+    const isUserDisabled = <?= ($employee_status === 'disabled') ? 'true' : 'false' ?>;
+
+  function validateForm() {
+    console.log("User disabled? ", isUserDisabled); 
+
+    if (isUserDisabled === true || isUserDisabled === "true") {
+      const popup = document.getElementById("blockedPopup");
+      if (popup) {
+        popup.style.display = "flex";
+      } else {
+        alert("Your account is disabled.");
+      }
+      return false; 
+    }
+
+    const itr = document.querySelector('select[name="itr_status"]').value;
+    const loan = document.querySelector('select[name="any_loan"]').value;
+    const credit = document.querySelector('select[name="credit_card"]').value;
+    const gst = document.querySelector('select[name="gst_status"]').value;
+
+    const amount1 = document.getElementById("amount1").value.trim();
+    const amount2 = document.getElementById("amount2").value.trim();
+    const amount3 = document.getElementById("amount3").value.trim();
+
+    if (itr === "Yes" && !amount1 && !amount2 && !amount3) {
+        alert("Please fill at least one ITR amount field.");
+        return false;
+    }
+
+    if (loan === "Yes") {
+        const loanType = document.getElementById("loan_type").value;
+        const loanBank = document.getElementById("loan_bank").value;
+        const loanAmount = document.getElementById("loan_taken_amount").value.trim();
+
+        if (!loanType || !loanBank || !loanAmount) {
+            alert("Please fill all Loan details.");
+            return false;
+        }
+    }
+
+    if (credit === "Yes") {
+        const creditBank = document.getElementById("credit_bank").value;
+        const creditLimit = document.getElementById("credit_limit").value.trim();
+
+        if (!creditBank || !creditLimit) {
+            alert("Please fill all Credit Card details.");
+            return false;
+        }
+    }
+
+    if (gst === "Yes") {
+        const gstYears = document.getElementById("gst_years").value;
+        if (!gstYears || gstYears === "0") {
+            alert("Please select GST years (must be greater than 0).");
+            return false;
+        }
+    }
+
+    return true;
+}
+        document.addEventListener("DOMContentLoaded", function () {
+            const okBtn = document.getElementById("popup-ok");
+            okBtn.addEventListener("click", function () {
+                document.getElementById("popup").style.display = "none";
+                window.location.href = window.location.pathname;
+            });
+        });
+        
+        document.addEventListener("DOMContentLoaded", function () {
+        const itrSelect = document.querySelector('select[name="itr_status"]');
+        const extraFields = document.getElementById("itr-extra-fields");
+    
+        function toggleITRFields() {
+            if (itrSelect.value === "Yes") {
+                extraFields.style.display = "block";
+            } else {
+                extraFields.style.display = "none";
+            }
+        }
+
+    itrSelect.addEventListener("change", toggleITRFields);
+    toggleITRFields();
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const itrSelect = document.querySelector('select[name="itr_status"]');
+    const extraFields = document.getElementById("itr-extra-fields");
+
+    function toggleITRFields() {
+        extraFields.style.display = itrSelect.value === "Yes" ? "block" : "none";
+    }
+
+    itrSelect.addEventListener("change", toggleITRFields);
+    toggleITRFields();
+
+    const gstSelect = document.querySelector('select[name="gst_status"]');
+    const gstYearsField = document.getElementById("gst-years-field");
+
+    function toggleGSTYearsField() {
+        gstYearsField.style.display = gstSelect.value === "Yes" ? "block" : "none";
+    }
+
+    gstSelect.addEventListener("change", toggleGSTYearsField);
+    toggleGSTYearsField();
+});
+
+const loanSelect = document.querySelector('select[name="any_loan"]');
+const loanDetailsDiv = document.getElementById("loan-details");
+
+function toggleLoanFields() {
+    loanDetailsDiv.style.display = loanSelect.value === "Yes" ? "block" : "none";
+}
+
+loanSelect.addEventListener("change", toggleLoanFields);
+toggleLoanFields();
+
+document.addEventListener("DOMContentLoaded", function () {
+    const creditCardSelect = document.getElementById("credit_card");
+    const creditDetails = document.getElementById("credit-details");
+
+    function toggleCreditFields() {
+        if (creditCardSelect.value === "Yes") {
+            creditDetails.style.display = "block";
+        } else {
+            creditDetails.style.display = "none";
+        }
+    }
+
+    creditCardSelect.addEventListener("change", toggleCreditFields);
+    toggleCreditFields();
+});
+
+function formatIndianNumber(value) {
+    const parts = value.replace(/,/g, '').split('.');
+    let intPart = parts[0];
+    let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+
+    if (intPart.length <= 3) return intPart + decimalPart;
+
+    let lastThree = intPart.slice(-3);
+    let otherNumbers = intPart.slice(0, -3);
+    let formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + "," + lastThree;
+
+    return formatted + decimalPart;
+}
+
+document.querySelectorAll(".indian-format").forEach(function(input) {
+    input.addEventListener("input", function (e) {
+        let value = e.target.value.replace(/,/g, '');
+        if (!isNaN(value) && value.length > 0) {
+            e.target.value = formatIndianNumber(value);
+        }
+    });
+
+    input.addEventListener("blur", function (e) {
+        let value = e.target.value.replace(/,/g, '');
+        if (!isNaN(value) && value.length > 0) {
+            e.target.value = formatIndianNumber(value);
+        }
+    });
+
+    // Remove commas before submitting form
+    input.form.addEventListener("submit", function () {
+        input.value = input.value.replace(/,/g, '');
+    });
+});
+
+setInterval(() => {
+    fetch("check_session.php")
+        .then(res => res.json())
+        .then(data => {
+            if (!data.valid) {
+                alert("You have been logged out from another device.");
+                window.location.href = "index.php";
+            }
+        });
+}, 10000);
+
+// State and City Data
+const statesCities = {
+    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Kadapa", "Kakinada", "Tirupati", "Anantapur", "Vizianagaram", "Eluru", "Ongole", "Nandyal", "Machilipatnam", "Adoni", "Tenali", "Proddatur", "Chittoor", "Hindupur"],
+    
+    "Arunachal Pradesh": ["Itanagar", "Naharlagun", "Pasighat", "Tawang", "Ziro", "Along", "Bomdila", "Tezu", "Seppa", "Changlang", "Aalo", "Khonsa", "Daporijo", "Basar", "Roing"],
+    
+    "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur", "Bongaigaon", "Dhubri", "North Lakhimpur", "Karimganj", "Sivasagar", "Goalpara", "Barpeta", "Diphu", "Mangaldoi", "Haflong", "Hailakandi", "Morigaon", "Kokrajhar"],
+    
+    "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", "Darbhanga", "Bihar Sharif", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra", "Danapur", "Saharsa", "Hajipur", "Sasaram", "Dehri", "Siwan", "Motihari", "Nawada"],
+    
+    "Chhattisgarh": ["Raipur", "Bhilai", "Korba", "Bilaspur", "Durg", "Rajnandgaon", "Jagdalpur", "Raigarh", "Ambikapur", "Mahasamund", "Dhamtari", "Chirmiri", "Janjgir", "Sakti", "Kanker", "Bhatapara", "Dantewada", "Naila Janjgir", "Tilda Newra", "Mungeli"],
+    
+    "Goa": ["Panaji", "Vasco da Gama", "Margao", "Mapusa", "Ponda", "Bicholim", "Curchorem", "Sanquelim", "Valpoi", "Pernem", "Cuncolim", "Quepem", "Sanguem", "Canacona", "Aldona"],
+    
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Junagadh", "Gandhinagar", "Anand", "Navsari", "Morbi", "Nadiad", "Surendranagar", "Bharuch", "Mehsana", "Bhuj", "Porbandar", "Palanpur", "Valsad", "Vapi"],
+    
+    "Haryana": ["Faridabad", "Gurgaon", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal", "Sonipat", "Panchkula", "Bhiwani", "Sirsa", "Bahadurgarh", "Jind", "Thanesar", "Kaithal", "Rewari", "Narnaul", "Pundri", "Kosli"],
+    
+    "Himachal Pradesh": ["Shimla", "Dharamshala", "Solan", "Mandi", "Palampur", "Baddi", "Nahan", "Paonta Sahib", "Sundarnagar", "Chamba", "Una", "Kullu", "Hamirpur", "Bilaspur", "Yol", "Jubbal", "Chail", "Kasauli", "Dalhousie", "Manali"],
+    
+    "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Deoghar", "Phusro", "Hazaribagh", "Giridih", "Ramgarh", "Medininagar", "Chirkunda", "Pakaur", "Chaibasa", "Jhumri Telaiya", "Saunda", "Gumla", "Mihijam", "Nirsa", "Hussainabad", "Lohardaga"],
+    
+    "Karnataka": ["Bangalore", "Mysore", "Hubli-Dharwad", "Mangalore", "Belgaum", "Gulbarga", "Davanagere", "Bellary", "Bijapur", "Shimoga", "Tumkur", "Raichur", "Bidar", "Hospet", "Hassan", "Gadag-Betageri", "Udupi", "Bhadravati", "Chitradurga", "Kolar"],
+    
+    "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Kollam", "Thrissur", "Alappuzha", "Palakkad", "Kannur", "Payyanur", "Kanhangad", "Punalur", "Nilambur", "Adoor", "Attingal", "Wyanad", "Nedumangad", "Kondotty", "Tirurangadi", "Tirur", "Koyilandy"],
+    
+    "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa", "Murwara", "Singrauli", "Burhanpur", "Khandwa", "Bhind", "Chhindwara", "Guna", "Shivpuri", "Vidisha", "Chhatarpur"],
+    
+    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Aurangabad", "Solapur", "Amravati", "Navi Mumbai", "Kolhapur", "Sangli", "Malegaon", "Akola", "Latur", "Dhule", "Ahmednagar", "Chandrapur", "Parbhani", "Ichalkaranji", "Jalna"],
+    
+    "Manipur": ["Imphal", "Thoubal", "Lilong", "Mayang Imphal", "Kakching", "Bishnupur", "Churachandpur", "Senapati", "Ukhrul", "Tamenglong", "Jiribam", "Moreh", "Noney", "Pherzawl", "Tengnoupal"],
+    
+    "Meghalaya": ["Shillong", "Tura", "Nongstoin", "Jowai", "Baghmara", "Williamnagar", "Nongpoh", "Mairang", "Resubelpara", "Ampati", "Mawkyrwat", "Khliehriat", "Nartiang", "Ranikor", "Tikrikilla"],
+    
+    "Mizoram": ["Aizawl", "Lunglei", "Saiha", "Champhai", "Kolasib", "Serchhip", "Mamit", "Lawngtlai", "Saitual", "Khawzawl", "Hnahthial", "Bairabi", "North Vanlaiphai", "Tlabung", "Zawlnuam"],
+    
+    "Nagaland": ["Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha", "Mon", "Zunheboto", "Phek", "Kiphire", "Longleng", "Peren", "Noklak", "Chumukedima", "Tseminyu", "Tuli"],
+    
+    "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Brahmapur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada", "Jharsuguda", "Jeypore", "Barbil", "Khordha", "Sunabeda", "Rayagada", "Kendujhar", "Jagatsinghpur", "Paradip", "Bhawanipatna", "Dhenkanal"],
+    
+    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Firozpur", "Batala", "Pathankot", "Moga", "Abohar", "Malerkotla", "Khanna", "Phagwara", "Muktsar", "Barnala", "Rajpura", "Hoshiarpur", "Kapurthala", "Faridkot"],
+    
+    "Rajasthan": ["Jaipur", "Jodhpur", "Kota", "Bikaner", "Ajmer", "Udaipur", "Bhilwara", "Alwar", "Bharatpur", "Sikar", "Pali", "Sri Ganganagar", "Kishangarh", "Baran", "Dhaulpur", "Tonk", "Beawar", "Hanumangarh", "Gangapur City", "Banswara"],
+    
+    "Sikkim": ["Gangtok", "Namchi", "Geyzing", "Mangan", "Jorethang", "Naya Bazar", "Rangpo", "Singtam", "Pakyong", "Ravangla", "Yuksom", "Lachung", "Lachen", "Pelling", "Soreng"],
+    
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Tiruppur", "Vellore", "Erode", "Thoothukkudi", "Dindigul", "Thanjavur", "Ranipet", "Sivakasi", "Karur", "Udhagamandalam", "Hosur", "Nagercoil", "Kanchipuram", "Kumarakonam"],
+    
+    "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", "Ramagundam", "Mahbubnagar", "Nalgonda", "Adilabad", "Suryapet", "Miryalaguda", "Jagtial", "Mancherial", "Nirmal", "Kothagudem", "Palwancha", "Bodhan", "Yellandu", "Bellampalli", "Vikarabad"],
+    
+    "Tripura": ["Agartala", "Dharmanagar", "Udaipur", "Kailasahar", "Belonia", "Khowai", "Pratapgarh", "Ranirbazar", "Kumarghat", "Sonamura", "Panisagar", "Amarpur", "Jirania", "Kamalpur", "Sabroom"],
+    
+    "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Varanasi", "Meerut", "Allahabad", "Bareilly", "Aligarh", "Moradabad", "Saharanpur", "Gorakhpur", "Noida", "Firozabad", "Jhansi", "Muzaffarnagar", "Mathura", "Rampur", "Shahjahanpur", "Farrukhabad"],
+    
+    "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee", "Haldwani-cum-Kathgodam", "Rudrapur", "Kashipur", "Rishikesh", "Pithoragarh", "Jaspur", "Kichha", "Sitarganj", "Bageshwar", "Tehri", "Pauri", "Nainital", "Mussoorie", "Almora", "Rudraprayag", "Champawat", "Uttarkashi"],
+    
+    "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Malda", "Baharampur", "Habra", "Kharagpur", "Shantipur", "Dankuni", "Dhulian", "Ranaghat", "Haldia", "Raiganj", "Krishnanagar", "Nabadwip", "Medinipur", "Jalpaiguri", "Balurghat"],
+    
+    "Andaman and Nicobar Islands": ["Port Blair", "Bamboo Flat", "Garacharma", "Diglipur", "Mayabunder", "Rangat", "Campbell Bay", "Car Nicobar", "Hut Bay", "Nancowry", "Kamorta", "Katchal", "Little Andaman", "Neil Island", "Havelock Island"],
+    
+    "Chandigarh": ["Chandigarh"],
+    
+    "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Silvassa", "Vapi", "Dadra", "Nagar Haveli"],
+    
+    "Delhi": ["New Delhi", "Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi", "Central Delhi", "North East Delhi", "North West Delhi", "South East Delhi", "South West Delhi"],
+    
+    "Jammu and Kashmir": ["Srinagar", "Jammu", "Baramulla", "Anantnag", "Sopore", "KathuaUdhampur", "Punch", "Rajauri", "Kupwara", "Budgam", "Ganderbal", "Pulwama", "Shopian", "Bandipora", "Kulgam"],
+    
+    "Ladakh": ["Leh", "Kargil", "Nubra", "Changthang", "Zanskar", "Drass", "Khaltse", "Likir", "Padum", "Turtuk"],
+    
+    "Lakshadweep": ["Kavaratti", "Agatti", "Amini", "Andrott", "Bithra", "Chetlat", "Kadmat", "Kalpeni", "Kilthan", "Minicoy"],
+    
+    "Puducherry": ["Puducherry", "Karaikal", "Mahe", "Yanam", "Villianur", "Ariyankuppam", "Nettapakkam", "Bahour", "Kirumampakkam", "Mannadipet"]
+};
+
+// Populate states dropdown
+document.addEventListener("DOMContentLoaded", function() {
+    const stateSelect = document.getElementById("state");
+    const citySelect = document.getElementById("city");
+    
+    // Populate states
+    Object.keys(statesCities).sort().forEach(state => {
+        const option = document.createElement("option");
+        option.value = state;
+        option.textContent = state;
+        stateSelect.appendChild(option);
+    });
+    
+    // Handle state change
+    stateSelect.addEventListener("change", function() {
+        const selectedState = this.value;
+        
+        // Clear city dropdown
+        citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
+        
+        if (selectedState && statesCities[selectedState]) {
+            // Populate cities for selected state
+            statesCities[selectedState].sort().forEach(city => {
+                const option = document.createElement("option");
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+            
+            citySelect.disabled = false;
+        } else {
+            citySelect.disabled = true;
+        }
+    });
+    
+    // Initially disable city dropdown
+    citySelect.disabled = true;
+});
+    </script>
 </body>
 </html>
