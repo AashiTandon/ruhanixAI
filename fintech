@@ -1,3 +1,177 @@
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+ini_set('session.save_path', __DIR__ . '/tmp');
+if (!file_exists(__DIR__ . '/tmp')) {
+    mkdir(__DIR__ . '/tmp', 0777, true);
+}
+session_start();
+
+$conn = new mysqli();
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+if (isset($_SESSION['email'], $_SESSION['logged_in']) &&
+    $_SESSION['logged_in'] === true &&
+    basename($_SERVER['PHP_SELF']) === 'index.php') {
+    $checkSession = $conn->prepare("SELECT COUNT(*) FROM fintech_active_sessions WHERE user_email = ?");
+    $checkSession->bind_param("s", $_SESSION['email']);
+    $checkSession->execute();
+    $checkSession->bind_result($active);
+    $checkSession->fetch();
+    $checkSession->close();
+
+    if ($active == 0) {
+        session_unset();
+        session_destroy();
+        header("Location: index.php?forced_logout=1");
+        exit;
+    }
+}
+
+$sessionId = session_id();
+$email = $_SESSION['email'] ?? '';
+
+if ($email) {
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM fintech_active_sessions WHERE user_email = ? AND session_id = ?");
+    $stmt->bind_param("ss", $email, $sessionId);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($count === 0) {
+        session_unset();
+        session_destroy();
+        header("Location: index.php"); // back to login
+        exit;
+    }
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['logout'])) {
+    session_unset();
+    session_destroy();
+    header("Location: index.php");
+    exit;
+}
+
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: index.php");
+    exit;
+}
+
+if (time() - $_SESSION['last_login'] > 86400) {
+    session_unset();
+    session_destroy();
+    header("Location: index.php");
+    exit;
+}
+
+$user_email = $_SESSION['email'] ?? null;
+$employee_status = 'enabled';
+$showBlockedPopup = false;
+
+if ($user_email) {
+
+    $submitted_by = $_SESSION['name'] ?? '';
+    $submitted_by_email = $_SESSION['email'] ?? null;
+
+    if (!$submitted_by_email) {
+        die("Unauthorized access");
+    }
+
+    $stmt = $conn->prepare("SELECT status FROM fintech_employees WHERE email = ?");
+    $stmt->bind_param("s", $user_email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result && $row = $result->fetch_assoc()) {
+        $employee_status = strtolower($row['status']);
+        if ($employee_status === 'disabled') {
+            $showBlockedPopup = true;
+        }
+    }
+    $stmt->close();
+}
+
+$showPopup = isset($_GET['submitted']);
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['logout'])) {
+    if ($employee_status === 'disabled') {
+        $showBlockedPopup = true;
+    } else {
+        $conn = new mysqli("localhost","ruhanixl_legal","@aashi12345678@","ruhanixl_legal");
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
+
+        $stmt = $conn->prepare("
+            SELECT fe.name 
+            FROM fintech_login_test flt
+            JOIN fintech_employees fe ON flt.email = fe.email
+            WHERE flt.id = ?
+        ");
+        $user_id = $_SESSION['user_id'] ?? 0;
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $agent_name = '';
+        if ($result && $row = $result->fetch_assoc()) {
+            $agent_name = $row['name'];
+        }
+        $stmt->close();
+
+        $loan_service = $_POST["loan_service"];
+        $client_name = $_POST["client_name"];
+        $company_name = $_POST["company_name"];
+        $loan_amount = $_POST["loan_amount"];
+        $email = $_POST["email"];
+        $number = $_POST['number'];
+        $itr_status = $_POST["itr_status"];
+        $amount_2022_23 = $_POST["amount_2022_23"] ?? '';
+        $amount_2023_24 = $_POST["amount_2023_24"] ?? '';
+        $amount_2024_25 = $_POST["amount_2024_25"] ?? '';
+        $shop_status = $_POST['shop_status'];
+        $house_status = $_POST["house_status"];
+        $any_loan = $_POST["any_loan"];
+        $loan_type = $_POST["loan_type"] ?? '';
+        $loan_bank = $_POST["loan_bank"] ?? '';
+        $loan_taken_amount = $_POST["loan_taken_amount"] ?? '';
+        $credit_card = $_POST["credit_card"];
+        $credit_bank = $_POST["credit_bank"] ?? '';
+        $credit_limit = $_POST["credit_limit"] ?? '';
+        $gst_status = $_POST["gst_status"];
+        $gst_years = $_POST["gst_years"] ?? '';
+        $turnover = $_POST["turnover"];
+
+        if ($employee_status === 'disabled') {
+            $showBlockedPopup = true;
+        } else {
+    
+        $stmt = $conn->prepare("
+            INSERT INTO lead_data_test 
+            (loan_service, client_name, company_name, loan_amount, email, mobile_number, itr_status, amount_2022_23, amount_2023_24, amount_2024_25, shop_status, house_status, any_existing_loan, loan_type, loan_bank, loan_taken_amount, credit_card, credit_bank, credit_limit, gst_status, gst_years, annual_turnover, submitted_by_email)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+
+        $stmt->bind_param("sssssssssssssssssssssss", $loan_service, $client_name, $company_name, $loan_amount, $email, $number, $itr_status, $amount_2022_23, $amount_2023_24, $amount_2024_25, $shop_status, $house_status, $any_loan, $loan_type, $loan_bank, $loan_taken_amount, $credit_card, $credit_bank, $credit_limit, $gst_status, $gst_years, $turnover, $submitted_by_email);
+
+        }
+        if ($stmt->execute()) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?submitted=1");
+            exit;
+        } else {
+            echo "Error: " . $stmt->error;
+        }
+
+        $stmt->close();
+        $conn->close();
+    }
+}
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -330,19 +504,17 @@
         <label>Turnover/Sales Per Year</label>
         <input type="text" name="turnover" class="indian-format" required>
 
-        <label>State</label>
-        <select name="state" id="state" required>
-            <option value="" disabled selected>Select State</option>
-        </select>
-
-        <label>City</label>
-        <select name="city" id="city" required>
-            <option value="" disabled selected>Select City</option>
-        </select>
-
         <br><br>
         <button type="submit">Submit</button>
     </form>
+
+    <?php if ($showPopup) : ?>
+        <script>
+            window.onload = function () {
+                document.getElementById("popup").style.display = "flex";
+            };
+        </script>
+    <?php endif; ?>
 
     <div id="popup" class="popup-overlay">
         <div class="popup-content">
@@ -350,6 +522,14 @@
             <button id="popup-ok">OK</button>
         </div>
     </div>
+    
+    <?php if ($showBlockedPopup) : ?>
+    <script>
+        window.onload = function () {
+            document.getElementById("blockedPopup").style.display = "flex";
+        };
+    </script>
+<?php endif; ?>
 
 <div id="blockedPopup" class="popup-overlay">
     <div class="popup-content">
@@ -358,6 +538,9 @@
     </div>
 </div>
     <script>
+    
+    const isUserDisabled = <?= ($employee_status === 'disabled') ? 'true' : 'false' ?>;
+
   function validateForm() {
     console.log("User disabled? ", isUserDisabled); 
 
@@ -533,120 +716,6 @@ setInterval(() => {
             }
         });
 }, 10000);
-
-// State and City Data
-const statesCities = {
-    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Kadapa", "Kakinada", "Tirupati", "Anantapur", "Vizianagaram", "Eluru", "Ongole", "Nandyal", "Machilipatnam", "Adoni", "Tenali", "Proddatur", "Chittoor", "Hindupur"],
-    
-    "Arunachal Pradesh": ["Itanagar", "Naharlagun", "Pasighat", "Tawang", "Ziro", "Along", "Bomdila", "Tezu", "Seppa", "Changlang", "Aalo", "Khonsa", "Daporijo", "Basar", "Roing"],
-    
-    "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur", "Bongaigaon", "Dhubri", "North Lakhimpur", "Karimganj", "Sivasagar", "Goalpara", "Barpeta", "Diphu", "Mangaldoi", "Haflong", "Hailakandi", "Morigaon", "Kokrajhar"],
-    
-    "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", "Darbhanga", "Bihar Sharif", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra", "Danapur", "Saharsa", "Hajipur", "Sasaram", "Dehri", "Siwan", "Motihari", "Nawada"],
-    
-    "Chhattisgarh": ["Raipur", "Bhilai", "Korba", "Bilaspur", "Durg", "Rajnandgaon", "Jagdalpur", "Raigarh", "Ambikapur", "Mahasamund", "Dhamtari", "Chirmiri", "Janjgir", "Sakti", "Kanker", "Bhatapara", "Dantewada", "Naila Janjgir", "Tilda Newra", "Mungeli"],
-    
-    "Goa": ["Panaji", "Vasco da Gama", "Margao", "Mapusa", "Ponda", "Bicholim", "Curchorem", "Sanquelim", "Valpoi", "Pernem", "Cuncolim", "Quepem", "Sanguem", "Canacona", "Aldona"],
-    
-    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Junagadh", "Gandhinagar", "Anand", "Navsari", "Morbi", "Nadiad", "Surendranagar", "Bharuch", "Mehsana", "Bhuj", "Porbandar", "Palanpur", "Valsad", "Vapi"],
-    
-    "Haryana": ["Faridabad", "Gurgaon", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal", "Sonipat", "Panchkula", "Bhiwani", "Sirsa", "Bahadurgarh", "Jind", "Thanesar", "Kaithal", "Rewari", "Narnaul", "Pundri", "Kosli"],
-    
-    "Himachal Pradesh": ["Shimla", "Dharamshala", "Solan", "Mandi", "Palampur", "Baddi", "Nahan", "Paonta Sahib", "Sundarnagar", "Chamba", "Una", "Kullu", "Hamirpur", "Bilaspur", "Yol", "Jubbal", "Chail", "Kasauli", "Dalhousie", "Manali"],
-    
-    "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Deoghar", "Phusro", "Hazaribagh", "Giridih", "Ramgarh", "Medininagar", "Chirkunda", "Pakaur", "Chaibasa", "Jhumri Telaiya", "Saunda", "Gumla", "Mihijam", "Nirsa", "Hussainabad", "Lohardaga"],
-    
-    "Karnataka": ["Bangalore", "Mysore", "Hubli-Dharwad", "Mangalore", "Belgaum", "Gulbarga", "Davanagere", "Bellary", "Bijapur", "Shimoga", "Tumkur", "Raichur", "Bidar", "Hospet", "Hassan", "Gadag-Betageri", "Udupi", "Bhadravati", "Chitradurga", "Kolar"],
-    
-    "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Kollam", "Thrissur", "Alappuzha", "Palakkad", "Kannur", "Payyanur", "Kanhangad", "Punalur", "Nilambur", "Adoor", "Attingal", "Wyanad", "Nedumangad", "Kondotty", "Tirurangadi", "Tirur", "Koyilandy"],
-    
-    "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa", "Murwara", "Singrauli", "Burhanpur", "Khandwa", "Bhind", "Chhindwara", "Guna", "Shivpuri", "Vidisha", "Chhatarpur"],
-    
-    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Aurangabad", "Solapur", "Amravati", "Navi Mumbai", "Kolhapur", "Sangli", "Malegaon", "Akola", "Latur", "Dhule", "Ahmednagar", "Chandrapur", "Parbhani", "Ichalkaranji", "Jalna"],
-    
-    "Manipur": ["Imphal", "Thoubal", "Lilong", "Mayang Imphal", "Kakching", "Bishnupur", "Churachandpur", "Senapati", "Ukhrul", "Tamenglong", "Jiribam", "Moreh", "Noney", "Pherzawl", "Tengnoupal"],
-    
-    "Meghalaya": ["Shillong", "Tura", "Nongstoin", "Jowai", "Baghmara", "Williamnagar", "Nongpoh", "Mairang", "Resubelpara", "Ampati", "Mawkyrwat", "Khliehriat", "Nartiang", "Ranikor", "Tikrikilla"],
-    
-    "Mizoram": ["Aizawl", "Lunglei", "Saiha", "Champhai", "Kolasib", "Serchhip", "Mamit", "Lawngtlai", "Saitual", "Khawzawl", "Hnahthial", "Bairabi", "North Vanlaiphai", "Tlabung", "Zawlnuam"],
-    
-    "Nagaland": ["Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha", "Mon", "Zunheboto", "Phek", "Kiphire", "Longleng", "Peren", "Noklak", "Chumukedima", "Tseminyu", "Tuli"],
-    
-    "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Brahmapur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada", "Jharsuguda", "Jeypore", "Barbil", "Khordha", "Sunabeda", "Rayagada", "Kendujhar", "Jagatsinghpur", "Paradip", "Bhawanipatna", "Dhenkanal"],
-    
-    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Firozpur", "Batala", "Pathankot", "Moga", "Abohar", "Malerkotla", "Khanna", "Phagwara", "Muktsar", "Barnala", "Rajpura", "Hoshiarpur", "Kapurthala", "Faridkot"],
-    
-    "Rajasthan": ["Jaipur", "Jodhpur", "Kota", "Bikaner", "Ajmer", "Udaipur", "Bhilwara", "Alwar", "Bharatpur", "Sikar", "Pali", "Sri Ganganagar", "Kishangarh", "Baran", "Dhaulpur", "Tonk", "Beawar", "Hanumangarh", "Gangapur City", "Banswara"],
-    
-    "Sikkim": ["Gangtok", "Namchi", "Geyzing", "Mangan", "Jorethang", "Naya Bazar", "Rangpo", "Singtam", "Pakyong", "Ravangla", "Yuksom", "Lachung", "Lachen", "Pelling", "Soreng"],
-    
-    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Tiruppur", "Vellore", "Erode", "Thoothukkudi", "Dindigul", "Thanjavur", "Ranipet", "Sivakasi", "Karur", "Udhagamandalam", "Hosur", "Nagercoil", "Kanchipuram", "Kumarakonam"],
-    
-    "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", "Ramagundam", "Mahbubnagar", "Nalgonda", "Adilabad", "Suryapet", "Miryalaguda", "Jagtial", "Mancherial", "Nirmal", "Kothagudem", "Palwancha", "Bodhan", "Yellandu", "Bellampalli", "Vikarabad"],
-    
-    "Tripura": ["Agartala", "Dharmanagar", "Udaipur", "Kailasahar", "Belonia", "Khowai", "Pratapgarh", "Ranirbazar", "Kumarghat", "Sonamura", "Panisagar", "Amarpur", "Jirania", "Kamalpur", "Sabroom"],
-    
-    "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Varanasi", "Meerut", "Allahabad", "Bareilly", "Aligarh", "Moradabad", "Saharanpur", "Gorakhpur", "Noida", "Firozabad", "Jhansi", "Muzaffarnagar", "Mathura", "Rampur", "Shahjahanpur", "Farrukhabad"],
-    
-    "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee", "Haldwani-cum-Kathgodam", "Rudrapur", "Kashipur", "Rishikesh", "Pithoragarh", "Jaspur", "Kichha", "Sitarganj", "Bageshwar", "Tehri", "Pauri", "Nainital", "Mussoorie", "Almora", "Rudraprayag", "Champawat", "Uttarkashi"],
-    
-    "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Malda", "Baharampur", "Habra", "Kharagpur", "Shantipur", "Dankuni", "Dhulian", "Ranaghat", "Haldia", "Raiganj", "Krishnanagar", "Nabadwip", "Medinipur", "Jalpaiguri", "Balurghat"],
-    
-    "Andaman and Nicobar Islands": ["Port Blair", "Bamboo Flat", "Garacharma", "Diglipur", "Mayabunder", "Rangat", "Campbell Bay", "Car Nicobar", "Hut Bay", "Nancowry", "Kamorta", "Katchal", "Little Andaman", "Neil Island", "Havelock Island"],
-    
-    "Chandigarh": ["Chandigarh"],
-    
-    "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Silvassa", "Vapi", "Dadra", "Nagar Haveli"],
-    
-    "Delhi": ["New Delhi", "Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi", "Central Delhi", "North East Delhi", "North West Delhi", "South East Delhi", "South West Delhi"],
-    
-    "Jammu and Kashmir": ["Srinagar", "Jammu", "Baramulla", "Anantnag", "Sopore", "KathuaUdhampur", "Punch", "Rajauri", "Kupwara", "Budgam", "Ganderbal", "Pulwama", "Shopian", "Bandipora", "Kulgam"],
-    
-    "Ladakh": ["Leh", "Kargil", "Nubra", "Changthang", "Zanskar", "Drass", "Khaltse", "Likir", "Padum", "Turtuk"],
-    
-    "Lakshadweep": ["Kavaratti", "Agatti", "Amini", "Andrott", "Bithra", "Chetlat", "Kadmat", "Kalpeni", "Kilthan", "Minicoy"],
-    
-    "Puducherry": ["Puducherry", "Karaikal", "Mahe", "Yanam", "Villianur", "Ariyankuppam", "Nettapakkam", "Bahour", "Kirumampakkam", "Mannadipet"]
-};
-
-// Populate states dropdown
-document.addEventListener("DOMContentLoaded", function() {
-    const stateSelect = document.getElementById("state");
-    const citySelect = document.getElementById("city");
-    
-    // Populate states
-    Object.keys(statesCities).sort().forEach(state => {
-        const option = document.createElement("option");
-        option.value = state;
-        option.textContent = state;
-        stateSelect.appendChild(option);
-    });
-    
-    // Handle state change
-    stateSelect.addEventListener("change", function() {
-        const selectedState = this.value;
-        
-        // Clear city dropdown
-        citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
-        
-        if (selectedState && statesCities[selectedState]) {
-            // Populate cities for selected state
-            statesCities[selectedState].sort().forEach(city => {
-                const option = document.createElement("option");
-                option.value = city;
-                option.textContent = city;
-                citySelect.appendChild(option);
-            });
-            
-            citySelect.disabled = false;
-        } else {
-            citySelect.disabled = true;
-        }
-    });
-    
-    // Initially disable city dropdown
-    citySelect.disabled = true;
-});
     </script>
 </body>
 </html>
