@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian States and Cities Dropdown</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: white;
+            color: #333;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select:hover {
+            border-color: #667eea;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .selection-display {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .selection-display h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .selection-display p {
+            color: #666;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🇮🇳 Indian States & Cities</h1>
+        
+        <div class="form-group">
+            <label for="stateSelect">Select State:</label>
+            <select id="stateSelect">
+                <option value="">-- Choose a State --</option>
+            </select>
+        </div>
+
+        <div class="form-group hidden" id="cityGroup">
+            <label for="citySelect">Select City:</label>
+            <select id="citySelect">
+                <option value="">-- Choose a City --</option>
+            </select>
+        </div>
+
+        <div class="selection-display hidden" id="selectionDisplay">
+            <h3>Your Selection:</h3>
+            <p id="selectedState"></p>
+            <p id="selectedCity"></p>
+        </div>
+    </div>
+
+    <script>
+        // Indian States and Cities Data
+        const statesAndCities = {
+            "Andhra Pradesh": [
+                "Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", 
+                "Rajahmundry", "Tirupati", "Kadapa", "Anantapur", "Vizianagaram"
+            ],
+            "Arunachal Pradesh": [
+                "Itanagar", "Naharlagun", "Pasighat", "Tezper", "Bomdila", 
+                "Ziro", "Along", "Tezu", "Changlang", "Khonsa"
+            ],
+            "Assam": [
+                "Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", 
+                "Tinsukia", "Tezpur", "Bongaigaon", "Dhubri", "North Lakhimpur"
+            ],
+            "Bihar": [
+                "Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", 
+                "Darbhanga", "Bihar Sharif", "Arrah", "Begusarai", "Katihar"
+            ],
+            "Chhattisgarh": [
+                "Raipur", "Bhilai", "Bilaspur", "Korba", "Durg", 
+                "Rajnandgaon", "Jagdalpur", "Raigarh", "Ambikapur", "Mahasamund"
+            ],
+            "Goa": [
+                "Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda", 
+                "Bicholim", "Curchorem", "Sanquelim", "Cuncolim", "Quepem"
+            ],
+            "Gujarat": [
+                "Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", 
+                "Jamnagar", "Junagadh", "Gandhinagar", "Anand", "Navsari"
+            ],
+            "Haryana": [
+                "Gurugram", "Faridabad", "Panipat", "Ambala", "Yamunanagar", 
+                "Rohtak", "Hisar", "Karnal", "Sonipat", "Panchkula"
+            ],
+            "Himachal Pradesh": [
+                "Shimla", "Manali", "Dharamshala", "Kullu", "Solan", 
+                "Mandi", "Palampur", "Baddi", "Nahan", "Una"
+            ],
+            "Jharkhand": [
+                "Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Deoghar", 
+                "Phusro", "Hazaribagh", "Giridih", "Ramgarh", "Medininagar"
+            ],
+            "Karnataka": [
+                "Bangalore", "Mysore", "Hubli-Dharwad", "Mangalore", "Belgaum", 
+                "Gulbarga", "Davanagere", "Bellary", "Bijapur", "Shimoga"
+            ],
+            "Kerala": [
+                "Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Kollam", 
+                "Palakkad", "Alappuzha", "Malappuram", "Kannur", "Kasaragod"
+            ],
+            "Madhya Pradesh": [
+                "Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain", 
+                "Sagar", "Dewas", "Satna", "Ratlam", "Rewa"
+            ],
+            "Maharashtra": [
+                "Mumbai", "Pune", "Nagpur", "Thane", "Nashik", 
+                "Aurangabad", "Solapur", "Amravati", "Kolhapur", "Sangli"
+            ],
+            "Manipur": [
+                "Imphal", "Thoubal", "Bishnupur", "Churachandpur", "Ukhrul", 
+                "Senapati", "Tamenglong", "Chandel", "Jiribam", "Kakching"
+            ],
+            "Meghalaya": [
+                "Shillong", "Tura", "Jowai", "Nongpoh", "Baghmara", 
+                "Williamnagar", "Nongstoin", "Mawkyrwat", "Resubelpara", "Ampati"
+            ],
+            "Mizoram": [
+                "Aizawl", "Lunglei", "Saiha", "Champhai", "Kolasib", 
+                "Serchhip", "Mamit", "Lawngtlai", "Saitual", "Khawzawl"
+            ],
+            "Nagaland": [
+                "Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha", 
+                "Zunheboto", "Phek", "Kiphire", "Longleng", "Peren", "Mon"
+            ],
+            "Odisha": [
+                "Bhubaneswar", "Cuttack", "Rourkela", "Brahmapur", "Sambalpur", 
+                "Puri", "Balasore", "Baripada", "Bhadrak", "Jharsuguda"
+            ],
+            "Punjab": [
+                "Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", 
+                "Mohali", "Firozpur", "Batala", "Pathankot", "Moga"
+            ],
+            "Rajasthan": [
+                "Jaipur", "Jodhpur", "Kota", "Bikaner", "Ajmer", 
+                "Udaipur", "Bhilwara", "Alwar", "Bharatpur", "Sikar"
+            ],
+            "Sikkim": [
+                "Gangtok", "Namchi", "Geyzing", "Mangan", "Jorethang", 
+                "Naya Bazar", "Rangpo", "Singtam", "Pakyong", "Ravangla"
+            ],
+            "Tamil Nadu": [
+                "Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", 
+                "Tirunelveli", "Tiruppur", "Vellore", "Erode", "Thoothukkudi"
+            ],
+            "Telangana": [
+                "Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", 
+                "Ramagundam", "Mahabubnagar", "Nalgonda", "Adilabad", "Suryapet"
+            ],
+            "Tripura": [
+                "Agartala", "Dharmanagar", "Udaipur", "Kailashahar", "Belonia", 
+                "Khowai", "Pratapgarh", "Ranirbazar", "Sonamura", "Amarpur"
+            ],
+            "Uttar Pradesh": [
+                "Lucknow", "Kanpur", "Ghaziabad", "Agra", "Varanasi", 
+                "Meerut", "Allahabad", "Bareilly", "Aligarh", "Moradabad"
+            ],
+            "Uttarakhand": [
+                "Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur", 
+                "Kashipur", "Rishikesh", "Kotdwar", "Ramnagar", "Manglaur"
+            ],
+            "West Bengal": [
+                "Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", 
+                "Malda", "Bardhaman", "Baharampur", "Habra", "Kharagpur"
+            ],
+            "Delhi": [
+                "New Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi", 
+                "Central Delhi", "North East Delhi", "North West Delhi", "South East Delhi", "South West Delhi"
+            ],
+            "Jammu and Kashmir": [
+                "Srinagar", "Jammu", "Baramulla", "Anantnag", "Kupwara", 
+                "Pulwama", "Rajouri", "Kathua", "Udhampur", "Poonch"
+            ],
+            "Ladakh": [
+                "Leh", "Kargil", "Nubra", "Zanskar", "Changthang", 
+                "Drass", "Sankoo", "Turtuk", "Diskit", "Padum"
+            ]
+        };
+
+        // Get DOM elements
+        const stateSelect = document.getElementById('stateSelect');
+        const citySelect = document.getElementById('citySelect');
+        const cityGroup = document.getElementById('cityGroup');
+        const selectionDisplay = document.getElementById('selectionDisplay');
+        const selectedState = document.getElementById('selectedState');
+        const selectedCity = document.getElementById('selectedCity');
+
+        // Populate states dropdown
+        function populateStates() {
+            Object.keys(statesAndCities).sort().forEach(state => {
+                const option = document.createElement('option');
+                option.value = state;
+                option.textContent = state;
+                stateSelect.appendChild(option);
+            });
+        }
+
+        // Populate cities dropdown based on selected state
+        function populateCities(selectedStateValue) {
+            // Clear existing cities
+            citySelect.innerHTML = '<option value="">-- Choose a City --</option>';
+            
+            if (selectedStateValue && statesAndCities[selectedStateValue]) {
+                statesAndCities[selectedStateValue].sort().forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+            }
+        }
+
+        // Update selection display
+        function updateSelectionDisplay() {
+            const stateValue = stateSelect.value;
+            const cityValue = citySelect.value;
+
+            if (stateValue || cityValue) {
+                selectedState.textContent = stateValue ? `State: ${stateValue}` : '';
+                selectedCity.textContent = cityValue ? `City: ${cityValue}` : '';
+                selectionDisplay.classList.remove('hidden');
+                selectionDisplay.classList.add('fade-in');
+            } else {
+                selectionDisplay.classList.add('hidden');
+            }
+        }
+
+        // Event listeners
+        stateSelect.addEventListener('change', function() {
+            const selectedStateValue = this.value;
+            
+            if (selectedStateValue) {
+                populateCities(selectedStateValue);
+                cityGroup.classList.remove('hidden');
+                cityGroup.classList.add('fade-in');
+                citySelect.value = ''; // Reset city selection
+            } else {
+                cityGroup.classList.add('hidden');
+                selectionDisplay.classList.add('hidden');
+            }
+            
+            updateSelectionDisplay();
+        });
+
+        citySelect.addEventListener('change', function() {
+            updateSelectionDisplay();
+        });
+
+        // Initialize the application
+        populateStates();
+    </script>
+</body>
+</html>
