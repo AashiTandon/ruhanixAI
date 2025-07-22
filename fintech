@@ -358,9 +358,6 @@
     </div>
 </div>
     <script>
-    
-    const isUserDisabled = <?= ($employee_status === 'disabled') ? 'true' : 'false' ?>;
-
   function validateForm() {
     console.log("User disabled? ", isUserDisabled); 
 
