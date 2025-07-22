@@ -359,7 +359,7 @@
 </div>
     <script>
     
-    const isUserDisabled = <?= ($employee_status === 'disabled') ? 'true' : 'false' ?>;
+    const isUserDisabled = false; // Set to true if user should be disabled
 
   function validateForm() {
     console.log("User disabled? ", isUserDisabled); 
@@ -603,7 +603,7 @@ const statesCities = {
     
     "Delhi": ["New Delhi", "Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi", "Central Delhi", "North East Delhi", "North West Delhi", "South East Delhi", "South West Delhi"],
     
-    "Jammu and Kashmir": ["Srinagar", "Jammu", "Baramulla", "Anantnag", "Sopore", "KathuaUdhampur", "Punch", "Rajauri", "Kupwara", "Budgam", "Ganderbal", "Pulwama", "Shopian", "Bandipora", "Kulgam"],
+    "Jammu and Kashmir": ["Srinagar", "Jammu", "Baramulla", "Anantnag", "Sopore", "Kathua", "Udhampur", "Punch", "Rajauri", "Kupwara", "Budgam", "Ganderbal", "Pulwama", "Shopian", "Bandipora", "Kulgam"],
     
     "Ladakh": ["Leh", "Kargil", "Nubra", "Changthang", "Zanskar", "Drass", "Khaltse", "Likir", "Padum", "Turtuk"],
     
